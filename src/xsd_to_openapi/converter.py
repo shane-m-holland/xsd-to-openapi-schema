@@ -183,20 +183,32 @@ class XSDConverter:
         """Convert all types in the schema."""
         if not self.schema:
             return
-            
-        # Convert global elements
-        for elem_name, element in self.schema.elements.items():
-            schema = self._convert_element(element)
-            if schema:
-                doc.components["schemas"][elem_name] = schema.to_dict()
         
-        # Convert named types
+        # FIRST: Convert all named types (components) so they're available for referencing
         for type_name, type_def in self.schema.types.items():
             if type_name not in self._processed_types:
-                schema = self._convert_type(type_def, type_name)
+                clean_name = self._clean_element_name(type_name)
+                # Convert without referencing (since we're creating the components)
+                schema = self._convert_type(type_def, None)  # Pass None to avoid self-reference
                 if schema:
-                    doc.components["schemas"][type_name] = schema.to_dict()
-                    self._processed_types.add(type_name)
+                    # Add XML metadata for named types
+                    if not schema.xml:
+                        schema.xml = {}
+                    schema.xml["name"] = clean_name
+                    if self.schema.target_namespace:
+                        schema.xml["namespace"] = self.schema.target_namespace
+                    
+                    doc.components["schemas"][clean_name] = schema.to_dict()
+                    self._processed_types.add(clean_name)
+            
+        # SECOND: Convert global elements (now they can reference the components)
+        for elem_name, element in self.schema.elements.items():
+            clean_elem_name = self._clean_element_name(elem_name)
+            # Skip if element has same name as a type (avoid duplicate/self-reference)
+            if clean_elem_name not in self._processed_types:
+                schema = self._convert_element(element)
+                if schema:
+                    doc.components["schemas"][clean_elem_name] = schema.to_dict()
 
     def _convert_element(self, element: Any) -> Optional[OpenAPISchema]:
         """Convert an XSD element to OpenAPI schema."""
@@ -221,25 +233,29 @@ class XSDConverter:
         
         # Handle type
         if element.type:
-            if hasattr(element.type, 'base_type') or hasattr(element.type, 'content_type'):
-                type_schema = self._convert_type(element.type)
-                if type_schema:
-                    # Merge type schema properties
-                    if type_schema.ref:
-                        schema.ref = type_schema.ref
-                    else:
-                        schema = type_schema
-                        
+            type_name = getattr(element.type, 'name', None)
+            
+            # Check if this should be a reference to a component schema
+            if type_name and self._should_use_reference(type_name):
+                clean_name = self._clean_element_name(type_name)
+                schema.ref = f"#/components/schemas/{clean_name}"
+                # Note: XML metadata is preserved in the element's XML metadata set earlier
             else:
-                # Built-in or domain-specific type
-                type_name = getattr(element.type, 'name', None)
-                if type_name:
-                    clean_name = self._clean_element_name(type_name)
-                    
-                    # Check if this is a defined type in the schema (should use reference)
-                    if self.schema and clean_name in self.schema.types:
-                        schema.ref = f"#/components/schemas/{clean_name}"
-                    else:
+                # Handle inline types (anonymous complex types or built-in types)
+                if hasattr(element.type, 'base_type') or hasattr(element.type, 'content_type'):
+                    type_schema = self._convert_type(element.type)
+                    if type_schema:
+                        # Merge type schema properties
+                        if type_schema.ref:
+                            schema.ref = type_schema.ref
+                        else:
+                            schema = type_schema
+                            
+                else:
+                    # Built-in or domain-specific type
+                    if type_name:
+                        clean_name = self._clean_element_name(type_name)
+                        
                         # Try domain-specific type first
                         domain_schema = self._convert_domain_type(type_name)
                         if domain_schema:
@@ -247,8 +263,8 @@ class XSDConverter:
                         else:
                             # Fall back to built-in type
                             schema = self._convert_builtin_type(clean_name)
-                else:
-                    schema = self._convert_builtin_type('string')
+                    else:
+                        schema = self._convert_builtin_type('string')
         
         # Handle nullable (minOccurs=0) and nillable
         if getattr(element, 'min_occurs', 1) == 0:
@@ -276,7 +292,12 @@ class XSDConverter:
         self, type_def: Any, type_name: Optional[str] = None
     ) -> Optional[OpenAPISchema]:
         """Convert an XSD type definition to OpenAPI schema."""
-        # Use duck typing to identify type classes
+        # If this is a named type that should be referenced, return a reference
+        if type_name and self._should_use_reference(type_name):
+            clean_name = self._clean_element_name(type_name)
+            return OpenAPISchema(ref=f"#/components/schemas/{clean_name}")
+        
+        # Use duck typing to identify type classes for inline conversion
         if hasattr(type_def, 'is_simple') and type_def.is_simple():
             return self._convert_simple_type(type_def, type_name)
         elif hasattr(type_def, 'is_complex') and type_def.is_complex():
@@ -764,6 +785,23 @@ class XSDConverter:
             # Remove namespace URI: {http://namespace}ElementName -> ElementName
             return name.split('}')[1]
         return name
+    
+    def _should_use_reference(self, type_name: str) -> bool:
+        """Determine if a type should use a $ref instead of inline definition."""
+        if not type_name or not self.schema:
+            return False
+        
+        clean_name = self._clean_element_name(type_name)
+        
+        # Check if this is a named type in the schema that should be referenced
+        if clean_name in self.schema.types:
+            return True
+            
+        # Check if we've already processed this type (it exists in components)
+        if clean_name in self._processed_types:
+            return True
+            
+        return False
     
     def _extract_documentation(self, doc_element: Any) -> Optional[str]:
         """Extract documentation text from XML documentation element."""
