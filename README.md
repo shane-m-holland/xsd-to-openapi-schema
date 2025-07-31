@@ -1,8 +1,13 @@
-# XSD to OpenAPI Schema Converter
+# 🔄 XSD to OpenAPI Schema Converter
 
-A Python tool to convert XML Schema Definition (XSD) files to OpenAPI 3.0+ specifications, with robust handling of XSD choice elements, complex type hierarchies, and built-in type mappings.
+[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![OpenAPI](https://img.shields.io/badge/OpenAPI-3.0%2B-green)](https://swagger.io/specification/)
 
-## Features
+A powerful Python tool to convert XML Schema Definition (XSD) files to OpenAPI 3.0+ specifications, with robust handling of XSD choice elements, complex type hierarchies, and built-in type mappings.
+
+## ✨ Features
 
 - **Complete XSD Support**: Full support for XSD files including imports, includes, and complex nested structures
 - **Choice Element Conversion**: Converts XSD `<xs:choice>` elements to OpenAPI `oneOf` constructs
@@ -14,12 +19,12 @@ A Python tool to convert XML Schema Definition (XSD) files to OpenAPI 3.0+ speci
 - **CLI Interface**: Easy-to-use command-line tool
 - **Robust Error Handling**: Graceful handling of edge cases and malformed schemas
 
-## Prerequisites
+## 📋 Prerequisites
 
 - Python 3.8+
 - pip package manager
 
-## Installation
+## 🚀 Installation
 
 1. **Install dependencies:**
    ```bash
@@ -41,9 +46,9 @@ For development with additional tools:
 pip install -e ".[dev]"
 ```
 
-## Usage
+## 💻 Usage
 
-### Command Line
+### 🖥️ Command Line
 
 Convert a single XSD file:
 ```bash
@@ -55,7 +60,7 @@ Convert with JSON output:
 xsd-to-openapi convert input.xsd output.json --format json
 ```
 
-### Python API
+### 🐍 Python API
 
 ```python
 from xsd_to_openapi import XSDConverter
@@ -64,7 +69,7 @@ converter = XSDConverter()
 openapi_spec = converter.convert_file("schema.xsd")
 ```
 
-### Examples
+### 📝 Examples
 
 See the `examples/` directory for usage examples:
 
@@ -75,7 +80,7 @@ python3 examples/demo.py your_schema.xsd
 
 The example demonstrates the conversion process step-by-step. You'll need to provide your own XSD files to test with.
 
-## XSD Feature Support
+## 🎯 XSD Feature Support
 
 - ✅ Simple types with restrictions (string, numeric, date, etc.)
 - ✅ Complex types and sequences
@@ -89,7 +94,7 @@ The example demonstrates the conversion process step-by-step. You'll need to pro
 - ✅ Attributes
 - ✅ Documentation annotations
 
-## Example
+## 🔍 Conversion Example
 
 Given this XSD:
 ```xml
@@ -121,15 +126,76 @@ Payment:
           $ref: '#/components/schemas/BankAccount'
 ```
 
-## Development
+## 🛠️ Development
 
-1. Clone the repository
-2. Install development dependencies: `pip install -e ".[dev]"`
-3. Run tests: `pytest`
-4. Format code: `black src tests`
-5. Lint: `flake8 src tests`
-6. Type check: `mypy src`
+### 🔧 Setup
 
-## License
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/user/xsd-to-openapi.git
+   cd xsd-to-openapi
+   ```
 
-MIT License - see LICENSE file for details.
+2. **Install development dependencies:**
+   ```bash
+   pip install -e ".[dev]"
+   ```
+
+### 🧪 Testing
+
+```bash
+# Run tests
+python3 tests/test_converter.py
+# or with pytest if available
+pytest
+```
+
+### 🎨 Code Quality
+
+```bash
+# Format code
+black src tests examples
+
+# Sort imports
+isort src tests examples
+
+# Type checking (if mypy available)
+mypy src
+```
+
+### 🏗️ Project Structure
+
+```
+src/xsd_to_openapi/     # Main package
+├── __init__.py         # Package exports
+├── converter.py        # Core conversion logic
+├── models.py           # Data models
+└── cli.py             # Command-line interface
+
+examples/              # Usage examples
+tests/                 # Test files
+pyproject.toml         # Project configuration
+requirements.txt       # Dependencies
+```
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 🐛 Issues
+
+If you encounter any problems or have feature requests, please [open an issue](https://github.com/user/xsd-to-openapi/issues) on GitHub.
+
+## ⭐ Star History
+
+If you find this project useful, please consider giving it a star! ⭐
