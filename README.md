@@ -1,15 +1,18 @@
 # XSD to OpenAPI Schema Converter
 
-A Python tool to convert XML Schema Definition (XSD) files to OpenAPI 3.0+ specifications, with proper handling of XSD choice elements and complex type hierarchies.
+A Python tool to convert XML Schema Definition (XSD) files to OpenAPI 3.0+ specifications, with robust handling of XSD choice elements, complex type hierarchies, and built-in type mappings.
 
 ## Features
 
-- **XSD Parsing**: Complete support for XSD files including imports and includes
-- **Choice Handling**: Converts XSD `<xs:choice>` elements to OpenAPI `oneOf`/`anyOf` constructs
-- **Complex Types**: Full support for complex types, sequences, and nested structures
-- **Reference Resolution**: Proper handling of type references and circular dependencies
+- **Complete XSD Support**: Full support for XSD files including imports, includes, and complex nested structures
+- **Choice Element Conversion**: Converts XSD `<xs:choice>` elements to OpenAPI `oneOf` constructs
+- **Built-in Type Handling**: Proper conversion of all XSD built-in types (boolean, date, decimal, etc.)
+- **Complex Type Support**: Full support for complex types, sequences, attributes, and inheritance
+- **Reference Resolution**: Intelligent handling of type references to generate clean, reusable schemas
+- **Constraint Mapping**: Converts XSD restrictions (length, pattern, min/max) to OpenAPI constraints
 - **Multiple Formats**: Output in both YAML and JSON formats
 - **CLI Interface**: Easy-to-use command-line tool
+- **Robust Error Handling**: Graceful handling of edge cases and malformed schemas
 
 ## Prerequisites
 
@@ -66,11 +69,11 @@ openapi_spec = converter.convert_file("schema.xsd")
 See the `examples/` directory for usage examples:
 
 ```bash
-# Run the demonstration example
-python3 examples/demo.py
+# Run the demonstration example with your own XSD files
+python3 examples/demo.py your_schema.xsd
 ```
 
-This example processes the included AF Command XSD files and shows the conversion process step-by-step.
+The example demonstrates the conversion process step-by-step. You'll need to provide your own XSD files to test with.
 
 ## XSD Feature Support
 
